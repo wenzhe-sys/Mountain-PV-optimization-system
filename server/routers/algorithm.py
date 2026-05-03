@@ -20,7 +20,7 @@ router = APIRouter(prefix="/algorithm", tags=["algorithm"])
 executor = ThreadPoolExecutor(max_workers=2)
 
 RAW_DATA_DIR = os.path.join(ALGORITHM_REPO_PATH, "data", "raw", "PV", "real")
-EXTENDED_DATA_DIR = os.path.join(ALGORITHM_REPO_PATH, "data", "processed", "PV", "public", "extended")
+EXTENDED_DATA_DIR = os.path.join(ALGORITHM_REPO_PATH, "data", "processed", "PV", "public")
 
 ALGORITHM_REPO_EXISTS = os.path.exists(ALGORITHM_REPO_PATH)
 
@@ -247,12 +247,13 @@ def list_instances():
 
     if os.path.exists(EXTENDED_DATA_DIR):
         try:
-            for f in sorted(os.listdir(EXTENDED_DATA_DIR)):
-                if f.endswith(".json"):
-                    parts = f.split('_')
-                    if len(parts) >= 3:
-                        instance_id = parts[-1].replace('.json', '')
-                        ids.add(instance_id)
+            for root, dirs, files in os.walk(EXTENDED_DATA_DIR):
+                for f in files:
+                    if f.endswith(".json"):
+                        parts = f.split('_')
+                        if len(parts) >= 3:
+                            instance_id = parts[-1].replace('.json', '')
+                            ids.add(instance_id)
         except Exception as e:
             print(f"Error reading extended data directory: {e}")
 
@@ -273,12 +274,13 @@ def list_preloaded_instances():
 
     if os.path.exists(EXTENDED_DATA_DIR):
         try:
-            for f in sorted(os.listdir(EXTENDED_DATA_DIR)):
-                if f.endswith(".json"):
-                    parts = f.split('_')
-                    if len(parts) >= 3:
-                        instance_id = parts[-1].replace('.json', '')
-                        ids.add(instance_id)
+            for root, dirs, files in os.walk(EXTENDED_DATA_DIR):
+                for f in files:
+                    if f.endswith(".json"):
+                        parts = f.split('_')
+                        if len(parts) >= 3:
+                            instance_id = parts[-1].replace('.json', '')
+                            ids.add(instance_id)
         except Exception as e:
             print(f"Error reading extended data directory: {e}")
 
