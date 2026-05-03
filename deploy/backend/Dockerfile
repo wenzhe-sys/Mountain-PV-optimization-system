@@ -5,7 +5,7 @@ WORKDIR /app
 
 # 复制Python依赖文件
 COPY server/requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 
 # 复制后端代码
 COPY server/ ./server/
