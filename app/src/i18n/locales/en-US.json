@@ -1,0 +1,134 @@
+{
+  "common": {
+    "dashboard": "Dashboard",
+    "siteSelection": "Site Selection",
+    "panelLayout": "Panel Layout",
+    "cableRouting": "Cable Routing",
+    "powerSystem": "Power System",
+    "costPrediction": "Cost Prediction",
+    "ecoImpact": "Eco Impact",
+    "equipment": "Equipment",
+    "monitoring": "Monitoring",
+    "login": "Login",
+    "logout": "Logout",
+    "profile": "Profile",
+    "settings": "Settings",
+    "help": "Help",
+    "dataManager": "Data Manager",
+    "search": "Search",
+    "theme": "Theme",
+    "language": "Language"
+  },
+  "login": {
+    "title": "Intelligent Mountain Photovoltaic Power Station Design Platform",
+    "subtitle": "Please login to access the system",
+    "email": "Email",
+    "password": "Password",
+    "rememberMe": "Remember me",
+    "forgotPassword": "Forgot password?",
+    "login": "Login",
+    "loginFailed": "Login failed",
+    "accountLocked": "Account locked",
+    "testAccount": "Test account information",
+    "securityTip": "Security tip: 3 consecutive login failures will lock the account for 1 minute"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "overview": "Project Overview",
+    "energyProduction": "Energy Production",
+    "capacity": "Installed Capacity",
+    "efficiency": "System Efficiency",
+    "carbonReduction": "Carbon Reduction",
+    "alerts": "Alerts",
+    "performance": "Performance Analysis",
+    "weather": "Weather Data",
+    "recentActivities": "Recent Activities"
+  },
+  "siteSelection": {
+    "title": "Intelligent Site Selection",
+    "terrainAnalysis": "Terrain Analysis",
+    "solarRadiation": "Solar Radiation",
+    "slopeAnalysis": "Slope Analysis",
+    "optimalSite": "Optimal Site",
+    "startAnalysis": "Start Analysis",
+    "reset": "Reset",
+    "export": "Export",
+    "import": "Import"
+  },
+  "panelLayout": {
+    "title": "Panel Layout",
+    "optimizeLayout": "Optimize Layout",
+    "shadowAnalysis": "Shadow Analysis",
+    "tiltAngle": "Tilt Angle",
+    "azimuthAngle": "Azimuth Angle",
+    "panelDensity": "Panel Density",
+    "generateLayout": "Generate Layout",
+    "exportLayout": "Export Layout"
+  },
+  "cableRouting": {
+    "title": "Cable Routing",
+    "optimizeRouting": "Optimize Routing",
+    "trenchOptimization": "Trench Optimization",
+    "cableLength": "Cable Length",
+    "costEstimation": "Cost Estimation",
+    "generateRoutes": "Generate Routes",
+    "exportRoutes": "Export Routes"
+  },
+  "powerSystem": {
+    "title": "Power System Simulation",
+    "lossCalculation": "Loss Calculation",
+    "powerFlow": "Power Flow Analysis",
+    "faultAnalysis": "Fault Analysis",
+    "voltageQuality": "Voltage Quality",
+    "runSimulation": "Run Simulation",
+    "exportResults": "Export Results"
+  },
+  "costPrediction": {
+    "title": "Cost Prediction",
+    "investment": "Investment Estimation",
+    "operationCost": "Operation Cost",
+    "roiAnalysis": "ROI Analysis",
+    "marketTrends": "Market Trends",
+    "generateReport": "Generate Report"
+  },
+  "ecoImpact": {
+    "title": "Eco Impact Assessment",
+    "environmentalImpact": "Environmental Impact",
+    "carbonFootprint": "Carbon Footprint",
+    "mitigationMeasures": "Mitigation Measures",
+    "compliance": "Compliance Analysis",
+    "startAssessment": "Start Assessment",
+    "optimizeImpact": "Optimize Impact"
+  },
+  "equipment": {
+    "title": "Equipment Management",
+    "inverters": "Inverters",
+    "transformers": "Transformers",
+    "combinerBoxes": "Combiner Boxes",
+    "distributionCabinets": "Distribution Cabinets",
+    "addEquipment": "Add Equipment",
+    "editEquipment": "Edit Equipment",
+    "deleteEquipment": "Delete Equipment"
+  },
+  "monitoring": {
+    "title": "Monitoring Analysis",
+    "realTimeMonitoring": "Real-time Monitoring",
+    "performanceAnalysis": "Performance Analysis",
+    "failurePrediction": "Failure Prediction",
+    "maintenanceSchedule": "Maintenance Schedule",
+    "generateReport": "Generate Report"
+  },
+  "dataManager": {
+    "title": "Data Management",
+    "export": "Data Export",
+    "import": "Data Import",
+    "exportAll": "Export All Data",
+    "exportType": "Export by Type",
+    "importType": "Data Type",
+    "uploadFile": "Upload File",
+    "supportedFormats": "Supports CSV and JSON formats",
+    "importSuccess": "Data imported successfully!",
+    "importError": "Data import failed",
+    "close": "Close"
+  }
+}

@@ -1,0 +1,71 @@
+# Dependencies
+node_modules/
+**/node_modules/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+
+# Build outputs
+dist/
+build/
+*.egg-info/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+server/logs/
+
+# Python Virtual Environment - CRITICAL: Exclude large ML libraries
+venv/
+.venv/
+**/venv/
+**/.venv/
+mountain_pv_optimization/venv/
+mountain_pv_optimization/.venv/
+mountain_pv_optimization/data/cache/
+
+# Data - Exclude large files
+mountain_pv_optimization/data/raw/
+mountain_pv_optimization/data/processed/
+mountain_pv_optimization/data/results/
+mountain_pv_optimization/outputs/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Docker
+*.dockerignore
+.dockerignore
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Large binary files
+*.zip
+*.tar
+*.tar.gz
+*.rar

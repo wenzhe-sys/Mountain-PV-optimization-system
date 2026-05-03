@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  # Python FastAPI 后端服务 - 新实例
+  backend-v2:
+    build:
+      context: .
+      dockerfile: deploy/backend/Dockerfile
+    container_name: pv-backend-v2
+    restart: unless-stopped
+    ports:
+      - "8004:8003"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - DATABASE_URL=sqlite:///./app-v2.db
+      - ALGORITHM_REPO_PATH=/app/mountain_pv_optimization
+    volumes:
+      - ./server:/app/server
+      - ./mountain_pv_optimization:/app/mountain_pv_optimization
+      - ./server/data-v2:/app/server/data
+      - ./mountain_pv_optimization/data-v2:/app/mountain_pv_optimization/data
+    networks:
+      - pv-network-v2
+
+  # Node.js 后端服务 - 新实例
+  nodejs-v2:
+    build:
+      context: .
+      dockerfile: deploy/nodejs/Dockerfile
+    container_name: pv-nodejs-v2
+    restart: unless-stopped
+    ports:
+      - "5003:5000"
+    environment:
+      - NODE_ENV=production
+      - JWT_SECRET=new-secret-key-for-v2-production
+      - MONGO_URI=mongodb://mongodb-v2:27017/pv-optimization-v2
+    depends_on:
+      - mongodb-v2
+    networks:
+      - pv-network-v2
+
+  # MongoDB 数据库 - 新实例
+  mongodb-v2:
+    image: mongo:6.0
+    container_name: pv-mongodb-v2
+    restart: unless-stopped
+    volumes:
+      - mongodb_data_v2:/data/db
+    networks:
+      - pv-network-v2
+
+  # 前端服务 - 新实例
+  frontend-v2:
+    build:
+      context: .
+      dockerfile: deploy/frontend/Dockerfile
+    container_name: pv-frontend-v2
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend-v2
+      - nodejs-v2
+    networks:
+      - pv-network-v2
+
+networks:
+  pv-network-v2:
+    driver: bridge
+
+volumes:
+  mongodb_data_v2:

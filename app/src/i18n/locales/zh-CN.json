@@ -1,0 +1,134 @@
+{
+  "common": {
+    "dashboard": "仪表盘",
+    "siteSelection": "智能选址",
+    "panelLayout": "面板布局",
+    "cableRouting": "电缆路由",
+    "powerSystem": "电力系统",
+    "costPrediction": "成本预测",
+    "ecoImpact": "生态影响",
+    "equipment": "设备管理",
+    "monitoring": "监控分析",
+    "login": "登录",
+    "logout": "登出",
+    "profile": "个人资料",
+    "settings": "设置",
+    "help": "帮助",
+    "dataManager": "数据管理",
+    "search": "搜索",
+    "theme": "主题",
+    "language": "语言"
+  },
+  "login": {
+    "title": "智能山地光伏电站设计平台",
+    "subtitle": "请登录以访问系统",
+    "email": "邮箱",
+    "password": "密码",
+    "rememberMe": "记住我",
+    "forgotPassword": "忘记密码?",
+    "login": "登录",
+    "loginFailed": "登录失败",
+    "accountLocked": "账户已被锁定",
+    "testAccount": "测试账号信息",
+    "securityTip": "安全提示: 连续3次登录失败将锁定账户1分钟"
+  },
+  "dashboard": {
+    "title": "仪表盘",
+    "overview": "项目概览",
+    "energyProduction": "发电量",
+    "capacity": "装机容量",
+    "efficiency": "系统效率",
+    "carbonReduction": "碳减排",
+    "alerts": "告警信息",
+    "performance": "性能分析",
+    "weather": "天气数据",
+    "recentActivities": "最近活动"
+  },
+  "siteSelection": {
+    "title": "智能选址",
+    "terrainAnalysis": "地形分析",
+    "solarRadiation": "太阳辐射",
+    "slopeAnalysis": "坡度分析",
+    "optimalSite": "最优选址",
+    "startAnalysis": "开始分析",
+    "reset": "重置",
+    "export": "导出",
+    "import": "导入"
+  },
+  "panelLayout": {
+    "title": "面板布局",
+    "optimizeLayout": "优化布局",
+    "shadowAnalysis": "阴影分析",
+    "tiltAngle": "倾斜角度",
+    "azimuthAngle": "方位角",
+    "panelDensity": "面板密度",
+    "generateLayout": "生成布局",
+    "exportLayout": "导出布局"
+  },
+  "cableRouting": {
+    "title": "电缆路由",
+    "optimizeRouting": "优化路由",
+    "trenchOptimization": "共沟优化",
+    "cableLength": "电缆长度",
+    "costEstimation": "成本估算",
+    "generateRoutes": "生成路由",
+    "exportRoutes": "导出路由"
+  },
+  "powerSystem": {
+    "title": "电力系统仿真",
+    "lossCalculation": "损耗计算",
+    "powerFlow": "潮流分析",
+    "faultAnalysis": "故障分析",
+    "voltageQuality": "电压质量",
+    "runSimulation": "运行仿真",
+    "exportResults": "导出结果"
+  },
+  "costPrediction": {
+    "title": "成本预测",
+    "investment": "投资估算",
+    "operationCost": "运行成本",
+    "roiAnalysis": "投资回报分析",
+    "marketTrends": "市场趋势",
+    "generateReport": "生成报告"
+  },
+  "ecoImpact": {
+    "title": "生态影响评估",
+    "environmentalImpact": "环境影响",
+    "carbonFootprint": "碳足迹",
+    "mitigationMeasures": "减缓措施",
+    "compliance": "合规性分析",
+    "startAssessment": "开始评估",
+    "optimizeImpact": "优化影响"
+  },
+  "equipment": {
+    "title": "设备管理",
+    "inverters": "逆变器",
+    "transformers": "变压器",
+    "combinerBoxes": "汇流箱",
+    "distributionCabinets": "配电柜",
+    "addEquipment": "添加设备",
+    "editEquipment": "编辑设备",
+    "deleteEquipment": "删除设备"
+  },
+  "monitoring": {
+    "title": "监控分析",
+    "realTimeMonitoring": "实时监控",
+    "performanceAnalysis": "性能分析",
+    "failurePrediction": "故障预测",
+    "maintenanceSchedule": "运维计划",
+    "generateReport": "生成报告"
+  },
+  "dataManager": {
+    "title": "数据管理",
+    "export": "数据导出",
+    "import": "数据导入",
+    "exportAll": "导出全部数据",
+    "exportType": "按类型导出",
+    "importType": "数据类型",
+    "uploadFile": "上传文件",
+    "supportedFormats": "支持 CSV 和 JSON 格式",
+    "importSuccess": "数据导入成功！",
+    "importError": "数据导入失败",
+    "close": "关闭"
+  }
+}
