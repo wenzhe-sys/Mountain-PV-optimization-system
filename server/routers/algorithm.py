@@ -260,6 +260,34 @@ def list_instances():
     return {"status": "success", "data": sorted(list(ids))}
 
 
+@router.get("/instances/{instance_id}")
+def get_instance(instance_id: str):
+    if not ALGORITHM_REPO_EXISTS:
+        raise HTTPException(404, "算法仓库不存在")
+
+    instance_data = None
+
+    txt_path = os.path.join(RAW_DATA_DIR, f"{instance_id}.txt")
+    if os.path.exists(txt_path):
+        with open(txt_path, "r", encoding="utf-8") as f:
+            content = f.read()
+            instance_data = {"type": "raw", "content": content}
+
+    if not instance_data:
+        for root, dirs, files in os.walk(EXTENDED_DATA_DIR):
+            for f in files:
+                if f.endswith(".json") and f"_{instance_id}.json" in f:
+                    json_path = os.path.join(root, f)
+                    with open(json_path, "r", encoding="utf-8") as f:
+                        instance_data = {"type": "extended", "content": json.load(f)}
+                    break
+
+    if not instance_data:
+        raise HTTPException(404, f"算例 {instance_id} 不存在")
+
+    return {"status": "success", "data": instance_data}
+
+
 @router.get("/instances/preloaded-list")
 def list_preloaded_instances():
     if not ALGORITHM_REPO_EXISTS:
