@@ -289,3 +289,53 @@ def list_preloaded_instances():
             for iid in sorted(list(ids))
         ],
     }
+
+
+class DashboardMetricsRequest(BaseModel):
+    instance_id: str
+
+
+@router.post("/dashboard-metrics")
+def get_dashboard_metrics(
+    request: DashboardMetricsRequest,
+    db: Session = Depends(get_db),
+):
+    instance_id = request.instance_id
+
+    inst = db.query(Instance).filter(Instance.instance_id == instance_id).first()
+
+    metrics = {
+        "instance_id": instance_id,
+        "total_panels": 0,
+        "total_area": 0.0,
+        "total_cost": 0.0,
+        "total_power": 0.0,
+        "lifecycle_carbon": 0.0,
+        "lifecycle_cost": 0.0,
+        "status": inst.status if inst else "unknown",
+    }
+
+    if inst and inst.status == "completed":
+        results = db.query(ModuleResult).filter(
+            ModuleResult.instance_id == instance_id
+        ).all()
+
+        for r in results:
+            try:
+                data = json.loads(r.result_json)
+                if "total_panels" in data:
+                    metrics["total_panels"] = data["total_panels"]
+                if "total_area" in data:
+                    metrics["total_area"] = data["total_area"]
+                if "total_cost" in data:
+                    metrics["total_cost"] = data["total_cost"]
+                if "total_power" in data:
+                    metrics["total_power"] = data["total_power"]
+                if "lifecycle_carbon" in data:
+                    metrics["lifecycle_carbon"] = data["lifecycle_carbon"]
+                if "lifecycle_cost" in data:
+                    metrics["lifecycle_cost"] = data["lifecycle_cost"]
+            except:
+                pass
+
+    return {"status": "success", "data": metrics}
