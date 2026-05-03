@@ -18,7 +18,6 @@ services:
       - ./server:/app/server
       - ./mountain_pv_optimization:/app/mountain_pv_optimization
       - ./server/data-v2:/app/server/data
-      - ./mountain_pv_optimization/data-v2:/app/mountain_pv_optimization/data
     networks:
       - pv-network-v2
 
