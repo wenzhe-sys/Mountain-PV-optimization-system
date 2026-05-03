@@ -20,7 +20,7 @@ FROM nginx:alpine
 COPY --from=builder /app/dist /usr/share/nginx/html
 
 # 复制Nginx配置
-COPY deploy/nginx/nginx.conf /etc/nginx/conf.d/default.conf
+COPY deploy/nginx/nginx.conf-v2 /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
 
