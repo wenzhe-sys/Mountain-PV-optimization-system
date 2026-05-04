@@ -299,11 +299,38 @@ def load_instances_from_directory():
             if existing:
                 continue
 
+            # 尝试从文件中读取节点数
+            n_nodes = 0
+            search_dirs = [
+                os.path.join(ALGORITHM_REPO_PATH, "data", "processed", "PV", "public", "easy"),
+                os.path.join(ALGORITHM_REPO_PATH, "data", "processed", "PV", "public", "medium"),
+                os.path.join(ALGORITHM_REPO_PATH, "data", "processed", "PV", "public", "hard"),
+            ]
+            
+            for search_dir in search_dirs:
+                if not os.path.exists(search_dir):
+                    continue
+                for f in os.listdir(search_dir):
+                    if f.endswith(".json") and instance_id in f:
+                        file_path = os.path.join(search_dir, f)
+                        try:
+                            with open(file_path, "r", encoding="utf-8") as jf:
+                                data = json.load(jf)
+                                if "instance_info" in data and "n_nodes" in data["instance_info"]:
+                                    n_nodes = data["instance_info"]["n_nodes"]
+                                elif "pva_list" in data:
+                                    n_nodes = len(data["pva_list"])
+                                break
+                        except Exception as e:
+                            print(f"读取算例文件失败 {f}: {e}")
+                if n_nodes > 0:
+                    break
+
             # 创建新记录
             instance = Instance(
                 instance_id=instance_id,
                 name=instance_id,
-                n_nodes=0,
+                n_nodes=n_nodes,
                 status="preloaded"  # 标记为预置算例
             )
             db.add(instance)

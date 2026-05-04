@@ -66,6 +66,25 @@ const COLORS = ['#00d4ff', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444', '#3b82f6'
 
 const OptimizationDemo = () => {
   const { theme, currentInstanceId, setCurrentInstanceId } = useAppStore();
+
+  // 当选择算例时，自动加载已有优化结果（已禁用）
+  // useEffect(() => {
+  //   const loadExistingResult = async () => {
+  //     if (currentInstanceId) {
+  //       try {
+  //         console.log('自动加载算例', currentInstanceId, '的已有优化结果');
+  //         const result = await optimizationService.getResults(currentInstanceId);
+  //         console.log('加载到的优化结果:', result);
+  //         setOptimizationResult(result);
+  //       } catch (error) {
+  //         console.log('未找到已有优化结果或加载失败:', error);
+  //         // 不显示错误提示，因为这是可选功能
+  //       }
+  //     }
+  //   };
+  //
+  //   loadExistingResult();
+  // }, [currentInstanceId]);
   const [instances, setInstances] = useState<string[]>([]);
 
   // 笔记管理功能
