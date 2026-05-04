@@ -11,7 +11,7 @@ export default defineConfig({
     host: '0.0.0.0',
     proxy: {
       '/algorithm': {
-        target: 'http://localhost:8004',
+        target: 'http://localhost:8003',
         changeOrigin: true,
       },
       '/api': {
@@ -19,7 +19,7 @@ export default defineConfig({
         changeOrigin: true,
       },
       '/ws': {
-        target: 'ws://localhost:8004',
+        target: 'ws://localhost:8003',
         changeOrigin: true,
         ws: true,
       },
