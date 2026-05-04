@@ -25,8 +25,14 @@ app.include_router(algorithm.router)
 
 
 @app.on_event("startup")
-def on_startup():
+async def on_startup():
     init_db()
+    # 尝试加载算例数据
+    try:
+        from routers.instances import load_instances_from_directory
+        load_instances_from_directory()
+    except Exception as e:
+        print(f"加载算例数据失败: {e}")
 
 
 @app.get("/api/health")

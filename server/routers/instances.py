@@ -271,3 +271,49 @@ def delete_instance(
     db.commit()
 
     return {"status": "success", "message": f"算例 {instance_id} 已成功删除"}
+
+
+def load_instances_from_directory():
+    """从算法仓库目录自动加载所有可用算例到数据库（启动时调用）"""
+    from database import SessionLocal
+    from models import Instance
+
+    print("开始加载算例数据...")
+
+    db = SessionLocal()
+    try:
+        # 检查是否已有数据
+        existing_count = db.query(Instance).count()
+        if existing_count > 0:
+            print(f"数据库已有 {existing_count} 个算例，跳过自动加载")
+            return
+
+        # 获取所有可用的原始算例
+        available = list_available_raw_instances()
+        print(f"找到 {len(available)} 个可用算例")
+
+        loaded_count = 0
+        for instance_id in available:
+            # 检查是否已存在
+            existing = db.query(Instance).filter(Instance.instance_id == instance_id).first()
+            if existing:
+                continue
+
+            # 创建新记录
+            instance = Instance(
+                instance_id=instance_id,
+                name=instance_id,
+                node_count=0,
+                status="preloaded"  # 标记为预置算例
+            )
+            db.add(instance)
+            loaded_count += 1
+
+        db.commit()
+        print(f"✓ 成功自动加载 {loaded_count} 个算例")
+
+    except Exception as e:
+        print(f"自动加载算例失败: {e}")
+        db.rollback()
+    finally:
+        db.close()
