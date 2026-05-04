@@ -303,7 +303,7 @@ def load_instances_from_directory():
             instance = Instance(
                 instance_id=instance_id,
                 name=instance_id,
-                node_count=0,
+                n_nodes=0,
                 status="preloaded"  # 标记为预置算例
             )
             db.add(instance)
