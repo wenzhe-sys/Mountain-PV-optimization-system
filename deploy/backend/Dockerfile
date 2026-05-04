@@ -5,7 +5,9 @@ WORKDIR /app
 
 # 复制Python依赖文件
 COPY server/requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+COPY mountain_pv_optimization/requirements.txt ./algo-requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple && \
+    pip install --no-cache-dir -r algo-requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 
 # 复制后端代码
 COPY server/ ./server/
