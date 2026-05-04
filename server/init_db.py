@@ -46,7 +46,7 @@ def init_database():
                 instance = Instance(
                     instance_id=instance_id,
                     name=data.get('name', instance_id),
-                    node_count=data.get('node_count', 0),
+                    n_nodes=data.get('n_nodes', 0),
                     status='uploaded'
                 )
 
