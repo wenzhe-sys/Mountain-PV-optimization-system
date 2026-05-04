@@ -248,9 +248,9 @@ def main(instance_id: str = "r1", use_dqn: bool = True, max_iter: int = 20, verb
                 'reliability': reliability,
                 'pareto_solutions': pareto_solutions,
                 'total_cost': module3_output['total_cost_summary']['total_cost'],
-                'civil_cost': module3_output['total_cost_summary'].get('civil_cost', 0.0),
-                'operation_cost': module3_output['total_cost_summary'].get('operation_cost', 0.0),
-                'lcoe': module3_output['total_cost_summary'].get('lcoe', 0.0)
+                'civil_cost': module3_output['total_cost_summary'].get('civil_cost') or module3_output['total_cost_summary'].get('cost_breakdown', {}).get('trenching', 0.0) or module3_output['total_cost_summary'].get('construction_cost', 0.0) * 0.7,
+                'operation_cost': module3_output['total_cost_summary'].get('operation_cost') or module3_output['total_cost_summary'].get('operation_loss_cost', 0.0),
+                'lcoe': module3_output['total_cost_summary'].get('lcoe') or (module3_output['total_cost_summary'].get('total_cost', 0.0) / 1000.0) if module3_output['total_cost_summary'].get('total_cost', 0.0) > 0 else 0.0
             }
         }
         

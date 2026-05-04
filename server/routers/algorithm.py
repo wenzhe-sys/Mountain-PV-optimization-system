@@ -148,7 +148,6 @@ def _run_optimization(job_id: int, instance_id: str, use_dqn: bool, max_iter: in
 def run_optimization(
     request: OptimizationRequest,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
 ):
     instance_id = request.instance_id
 
@@ -369,3 +368,311 @@ def get_dashboard_metrics(
                 pass
 
     return {"status": "success", "data": metrics}
+
+
+# 模板相关API
+@router.get("/templates/{template_id}/preview")
+def get_template_preview(template_id: str):
+    """获取模板预览"""
+    templates = {
+        "template-simple": {
+            "id": "template-simple",
+            "name": "简单场景模板",
+            "description": "平原地形，100-200个面板节点，适合初学者",
+            "difficulty": "简单",
+            "terrain": "平原",
+            "scale": "小型",
+            "features": ["基础地形数据", "标准设备参数", "完整约束条件"],
+            "preview_url": "https://via.placeholder.com/400x300.png?text=Simple+Template",
+            "parameters": {
+                "n_nodes": 150,
+                "grid_size": 10,
+                "slope_range": [0, 3],
+                "elevation_range": [95, 105],
+                "equipment": {
+                    "inverter": {"q": 0.9, "r": 0.98, "p": 4, "model": "Huawei SUN2000-100KTL", "max_input_current": 26, "max_power": 110000},
+                    "transformer": {"Q_box_options": [500, 630, 800, 1000, 1250]},
+                    "cable": {"types": ["YJV-4x35", "YJV-4x50", "YJV-4x70", "YJV-4x95"], "rho": 1.72e-8, "r_c": 0.0005, "I_max": 210}
+                }
+            }
+        },
+        "template-medium": {
+            "id": "template-medium",
+            "name": "中等场景模板",
+            "description": "丘陵地形，300-500个面板节点，适合专业设计",
+            "difficulty": "中等",
+            "terrain": "丘陵",
+            "scale": "中型",
+            "features": ["复杂地形数据", "多设备选型", "高级约束条件"],
+            "preview_url": "https://via.placeholder.com/400x300.png?text=Medium+Template",
+            "parameters": {
+                "n_nodes": 400,
+                "grid_size": 8,
+                "slope_range": [5, 18],
+                "elevation_range": [180, 280],
+                "equipment": {
+                    "inverter": {"q": 0.88, "r": 0.97, "p": 4, "model": "Huawei SUN2000-185KTL", "max_input_current": 30, "max_power": 200000},
+                    "transformer": {"Q_box_options": [1600, 2000, 2500, 3150]},
+                    "cable": {"types": ["YJV-4x35", "YJV-4x50", "YJV-4x70", "YJV-4x95", "YJV-4x120"], "rho": 1.72e-8, "r_c": 0.0005, "I_max": 240}
+                }
+            }
+        },
+        "template-hard": {
+            "id": "template-hard",
+            "name": "复杂场景模板",
+            "description": "山地地形，600-1000个面板节点，适合工程级项目",
+            "difficulty": "困难",
+            "terrain": "山地",
+            "scale": "大型",
+            "features": ["高精度地形数据", "多设备配置", "完整工程参数"],
+            "preview_url": "https://via.placeholder.com/400x300.png?text=Hard+Template",
+            "parameters": {
+                "n_nodes": 800,
+                "grid_size": 5,
+                "slope_range": [15, 35],
+                "elevation_range": [450, 780],
+                "equipment": {
+                    "inverter": {"q": 0.85, "r": 0.96, "p": 4, "model": "Huawei SUN2000-196KTL", "max_input_current": 35, "max_power": 215000},
+                    "transformer": {"Q_box_options": [3150, 4000, 5000, 6300]},
+                    "cable": {"types": ["YJV-4x35", "YJV-4x50", "YJV-4x70", "YJV-4x95", "YJV-4x120", "YJV-4x150", "YJV-4x185"], "rho": 1.72e-8, "r_c": 0.0005, "I_max": 300}
+                }
+            }
+        }
+    }
+
+    if template_id not in templates:
+        return {"status": "error", "message": "模板不存在"}
+
+    return {"status": "success", "data": templates[template_id]}
+
+
+@router.get("/templates/{template_id}/download")
+def download_template(template_id: str):
+    """下载模板文件"""
+    templates = {
+        "template-simple": {
+            "filename": "template_simple.json",
+            "content": json.dumps({
+                "instance_info": {
+                    "instance_id": "template_simple",
+                    "type": "template",
+                    "difficulty": "easy",
+                    "n_nodes": 150,
+                    "inverter_coord": [100.0, 200.0],
+                    "unit": "m",
+                    "source": "光伏优化系统模板",
+                    "version": "v1.0",
+                    "desensitization_info": {
+                        "is_desensitized": False,
+                        "note": "模板数据，仅供参考"
+                    }
+                },
+                "terrain_data": {
+                    "grid_size": 10,
+                    "elevation_range": [95, 105],
+                    "slope_range": [0, 3],
+                    "elevation_matrix": [],
+                    "slope_matrix": []
+                },
+                "pva_list": [
+                    {"panel_id": f"pva_{i}", "x": 100.0 + i * 2.5, "y": 200.0 + (i % 10) * 3.0, "grid_coord": [20 + i % 10, 10 + i // 10], "cut_spec": [2.0, 3.0]} for i in range(150)
+                ],
+                "pva_params": {
+                    "panel_width": 2.0,
+                    "panel_height": 3.0,
+                    "panel_area": 6.0,
+                    "panel_power": 550,
+                    "rows": 15,
+                    "cols": 10
+                },
+                "equipment_params": {
+                    "inverter": {
+                        "q": 0.9,
+                        "r": 0.98,
+                        "p": 4,
+                        "model": "Huawei SUN2000-100KTL",
+                        "max_input_current": 26,
+                        "max_power": 110000
+                    },
+                    "transformer": {
+                        "Q_box_options": [500, 630, 800, 1000, 1250],
+                        "c_box": {"500": 15000, "630": 18000, "800": 22000, "1000": 28000, "1250": 35000},
+                        "c_install_box": {"500": 8000, "630": 9500, "800": 11000, "1000": 14000, "1250": 17000}
+                    },
+                    "cable": {
+                        "types": ["YJV-4x35", "YJV-4x50", "YJV-4x70", "YJV-4x95"],
+                        "prices": {"4x35": 25, "4x50": 32, "4x70": 45, "4x95": 60},
+                        "max_current": {"4x35": 120, "4x50": 140, "4x70": 175, "4x95": 210}
+                    }
+                },
+                "loss_params": {
+                    "dc_loss": 0.02,
+                    "ac_loss": 0.015,
+                    "transformer_loss": 0.01,
+                    "availability_loss": 0.02
+                },
+                "constraint_info": {
+                    "max_slope": 15,
+                    "min_panel_spacing": 0.5,
+                    "max_string_length": 25,
+                    "max_voltage": 1500,
+                    "min_voltage": 900
+                }
+            }, indent=2)
+        },
+        "template-medium": {
+            "filename": "template_medium.json",
+            "content": json.dumps({
+                "instance_info": {
+                    "instance_id": "template_medium",
+                    "type": "template",
+                    "difficulty": "medium",
+                    "n_nodes": 400,
+                    "inverter_coord": [250.0, 350.0],
+                    "unit": "m",
+                    "source": "光伏优化系统模板",
+                    "version": "v1.0",
+                    "desensitization_info": {
+                        "is_desensitized": False,
+                        "note": "模板数据，仅供参考"
+                    }
+                },
+                "terrain_data": {
+                    "grid_size": 8,
+                    "elevation_range": [180, 280],
+                    "slope_range": [5, 18],
+                    "elevation_matrix": [],
+                    "slope_matrix": []
+                },
+                "pva_list": [
+                    {"panel_id": f"pva_{i}", "x": 150.0 + i * 2.5, "y": 250.0 + (i % 20) * 3.5, "grid_coord": [30 + i % 20, 15 + i // 20], "cut_spec": [2.0, 3.0]} for i in range(400)
+                ],
+                "pva_params": {
+                    "panel_width": 2.0,
+                    "panel_height": 3.0,
+                    "panel_area": 6.0,
+                    "panel_power": 550,
+                    "rows": 20,
+                    "cols": 20
+                },
+                "equipment_params": {
+                    "inverter": {
+                        "q": 0.88,
+                        "r": 0.97,
+                        "p": 4,
+                        "model": "Huawei SUN2000-185KTL",
+                        "max_input_current": 30,
+                        "max_power": 200000
+                    },
+                    "transformer": {
+                        "Q_box_options": [1600, 2000, 2500, 3150],
+                        "c_box": {"1600": 45000, "2000": 55000, "2500": 68000, "3150": 85000},
+                        "c_install_box": {"1600": 22000, "2000": 27000, "2500": 34000, "3150": 42000}
+                    },
+                    "cable": {
+                        "types": ["YJV-4x35", "YJV-4x50", "YJV-4x70", "YJV-4x95", "YJV-4x120"],
+                        "prices": {"4x35": 25, "4x50": 32, "4x70": 45, "4x95": 60, "4x120": 75},
+                        "max_current": {"4x35": 120, "4x50": 140, "4x70": 175, "4x95": 210, "4x120": 240}
+                    }
+                },
+                "loss_params": {
+                    "dc_loss": 0.025,
+                    "ac_loss": 0.018,
+                    "transformer_loss": 0.012,
+                    "availability_loss": 0.02,
+                    "mismatch_loss": 0.01,
+                    "soiling_loss": 0.03
+                },
+                "constraint_info": {
+                    "max_slope": 20,
+                    "min_panel_spacing": 0.6,
+                    "max_string_length": 30,
+                    "max_voltage": 1500,
+                    "min_voltage": 850,
+                    "max_current_per_string": 18
+                }
+            }, indent=2)
+        },
+        "template-hard": {
+            "filename": "template_hard.json",
+            "content": json.dumps({
+                "instance_info": {
+                    "instance_id": "template_hard",
+                    "type": "template",
+                    "difficulty": "hard",
+                    "n_nodes": 800,
+                    "inverter_coord": [400.0, 500.0],
+                    "unit": "m",
+                    "source": "光伏优化系统模板",
+                    "version": "v1.0",
+                    "desensitization_info": {
+                        "is_desensitized": False,
+                        "note": "模板数据，仅供参考"
+                    }
+                },
+                "terrain_data": {
+                    "grid_size": 5,
+                    "elevation_range": [450, 780],
+                    "slope_range": [15, 35],
+                    "elevation_matrix": [],
+                    "slope_matrix": []
+                },
+                "pva_list": [
+                    {"panel_id": f"pva_{i}", "x": 200.0 + i * 2.2, "y": 300.0 + (i % 30) * 4.0, "grid_coord": [60 + i % 30, 30 + i // 30], "cut_spec": [2.0, 3.0]} for i in range(800)
+                ],
+                "pva_params": {
+                    "panel_width": 2.0,
+                    "panel_height": 3.0,
+                    "panel_area": 6.0,
+                    "panel_power": 550,
+                    "rows": 30,
+                    "cols": 27
+                },
+                "equipment_params": {
+                    "inverter": {
+                        "q": 0.85,
+                        "r": 0.96,
+                        "p": 4,
+                        "model": "Huawei SUN2000-196KTL",
+                        "max_input_current": 35,
+                        "max_power": 215000
+                    },
+                    "transformer": {
+                        "Q_box_options": [3150, 4000, 5000, 6300],
+                        "c_box": {"3150": 95000, "4000": 120000, "5000": 150000, "6300": 190000},
+                        "c_install_box": {"3150": 48000, "4000": 60000, "5000": 75000, "6300": 95000}
+                    },
+                    "cable": {
+                        "types": ["YJV-4x35", "YJV-4x50", "YJV-4x70", "YJV-4x95", "YJV-4x120", "YJV-4x150", "YJV-4x185"],
+                        "prices": {"4x35": 25, "4x50": 32, "4x70": 45, "4x95": 60, "4x120": 75, "4x150": 92, "4x185": 110},
+                        "max_current": {"4x35": 120, "4x50": 140, "4x70": 175, "4x95": 210, "4x120": 240, "4x150": 270, "4x185": 300}
+                    }
+                },
+                "loss_params": {
+                    "dc_loss": 0.03,
+                    "ac_loss": 0.02,
+                    "transformer_loss": 0.015,
+                    "availability_loss": 0.025,
+                    "mismatch_loss": 0.015,
+                    "soiling_loss": 0.04,
+                    " shading_loss": 0.02
+                },
+                "constraint_info": {
+                    "max_slope": 25,
+                    "min_panel_spacing": 0.7,
+                    "max_string_length": 35,
+                    "max_voltage": 1500,
+                    "min_voltage": 800,
+                    "max_current_per_string": 20,
+                    "min_ground_clearance": 0.8,
+                    "max_azimuth": 180,
+                    "max_tilt": 60
+                }
+            }, indent=2)
+        }
+    }
+
+    if template_id not in templates:
+        return {"status": "error", "message": "模板不存在"}
+
+    return {"status": "success", "data": templates[template_id]}

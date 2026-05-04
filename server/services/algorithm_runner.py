@@ -1,38 +1,34 @@
-"""算法运行器 — 封装对 mountain_pv_optimization 算法仓库的调用"""
-
-import json
 import os
 import sys
+import json
+import subprocess
+import threading
 import traceback
+from typing import Optional, Dict, List, Any, Callable
 from concurrent.futures import ThreadPoolExecutor
-from datetime import datetime
-from typing import Optional
 
-from config import ALGORITHM_REPO_PATH
+# 线程池执行器
+executor = ThreadPoolExecutor(max_workers=5)
 
-# 线程池用于后台运行算法
-executor = ThreadPoolExecutor(max_workers=2)
-
-# 已有结果目录
-RESULTS_DIR = os.path.join(ALGORITHM_REPO_PATH, "data", "results")
-RAW_DATA_DIR = os.path.join(ALGORITHM_REPO_PATH, "data", "raw", "PV", "real")
-PROCESSED_DATA_DIR = os.path.join(ALGORITHM_REPO_PATH, "data", "processed", "PV", "public", "easy")
-EXTENDED_DATA_DIR = os.path.join(ALGORITHM_REPO_PATH, "data", "processed", "PV", "public", "extended")
+# 导入 config 的路径
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from config import ALGORITHM_REPO_PATH as _ALGORITHM_REPO_PATH
+ALGORITHM_REPO_PATH = _ALGORITHM_REPO_PATH
 
 # 检查算法仓库是否存在
 ALGORITHM_REPO_EXISTS = os.path.exists(ALGORITHM_REPO_PATH)
 
+# 原始数据目录（.txt文件）
+RAW_DATA_DIR = os.path.join(ALGORITHM_REPO_PATH, "data", "raw", "PV", "real")
 
-def load_existing_result(instance_id: str, module: int) -> Optional[dict]:
-    """加载算法仓库中已有的结果 JSON"""
-    if not ALGORITHM_REPO_EXISTS:
-        return None
-    filename = f"M{module}-Output_{instance_id}.json"
-    path = os.path.join(RESULTS_DIR, f"module{module}", filename)
-    if os.path.exists(path):
-        with open(path, "r", encoding="utf-8") as f:
-            return json.load(f)
-    return None
+# 预处理后的数据目录（.json文件）
+PROCESSED_DATA_DIR = os.path.join(ALGORITHM_REPO_PATH, "data", "processed", "PV", "public", "easy")
+
+# 扩展数据目录
+EXTENDED_DATA_DIR = os.path.join(ALGORITHM_REPO_PATH, "data", "processed", "PV", "public", "extended")
+
+# 结果目录
+RESULTS_DIR = os.path.join(ALGORITHM_REPO_PATH, "data", "results")
 
 
 def load_processed_instance(instance_id: str) -> Optional[dict]:
@@ -47,13 +43,34 @@ def load_processed_instance(instance_id: str) -> Optional[dict]:
         with open(path, "r", encoding="utf-8") as f:
             return json.load(f)
     
+    # 尝试从 medium 目录加载
+    processed_medium_dir = os.path.join(ALGORITHM_REPO_PATH, "data", "processed", "PV", "public", "medium")
+    if os.path.exists(processed_medium_dir):
+        for f in os.listdir(processed_medium_dir):
+            if f.endswith(f"_{instance_id}.json") or f.endswith(f"{instance_id}.json"):
+                path = os.path.join(processed_medium_dir, f)
+                if os.path.exists(path):
+                    with open(path, "r", encoding="utf-8") as f:
+                        return json.load(f)
+    
+    # 尝试从 hard 目录加载
+    processed_hard_dir = os.path.join(ALGORITHM_REPO_PATH, "data", "processed", "PV", "public", "hard")
+    if os.path.exists(processed_hard_dir):
+        for f in os.listdir(processed_hard_dir):
+            if f.endswith(f"_{instance_id}.json") or f.endswith(f"{instance_id}.json"):
+                path = os.path.join(processed_hard_dir, f)
+                if os.path.exists(path):
+                    with open(path, "r", encoding="utf-8") as f:
+                        return json.load(f)
+    
     # 再尝试从 extended 目录加载
-    for f in os.listdir(EXTENDED_DATA_DIR):
-        if f.endswith(f"_{instance_id}.json"):
-            path = os.path.join(EXTENDED_DATA_DIR, f)
-            if os.path.exists(path):
-                with open(path, "r", encoding="utf-8") as f:
-                    return json.load(f)
+    if os.path.exists(EXTENDED_DATA_DIR):
+        for f in os.listdir(EXTENDED_DATA_DIR):
+            if f.endswith(f"_{instance_id}.json") or f.endswith(f"{instance_id}.json"):
+                path = os.path.join(EXTENDED_DATA_DIR, f)
+                if os.path.exists(path):
+                    with open(path, "r", encoding="utf-8") as f:
+                        return json.load(f)
     
     return None
 
@@ -71,6 +88,45 @@ def list_available_raw_instances() -> list[str]:
             if f.endswith(".txt"):
                 ids.add(f.replace(".txt", ""))
     
+    # 从 easy 数据目录读取 (例如 public_easy_r1.json -> r1)
+    if os.path.exists(PROCESSED_DATA_DIR):
+        try:
+            for f in sorted(os.listdir(PROCESSED_DATA_DIR)):
+                if f.endswith(".json") and f.startswith("public_easy_"):
+                    # 提取算例 ID (例如 public_easy_r1.json -> r1)
+                    parts = f.replace("public_easy_", "").replace(".json", "")
+                    ids.add(parts)
+        except Exception as e:
+            print(f"Error reading easy data directory: {e}")
+    
+    # 从 medium 数据目录读取
+    processed_medium_dir = os.path.join(ALGORITHM_REPO_PATH, "data", "processed", "PV", "public", "medium")
+    if os.path.exists(processed_medium_dir):
+        try:
+            for f in sorted(os.listdir(processed_medium_dir)):
+                if f.endswith(".json") and "public_medium_" in f:
+                    # 提取算例 ID
+                    parts = f.split("_")
+                    if len(parts) >= 3:
+                        instance_id = parts[-1].replace('.json', '')
+                        ids.add(instance_id)
+        except Exception as e:
+            print(f"Error reading medium data directory: {e}")
+    
+    # 从 hard 数据目录读取
+    processed_hard_dir = os.path.join(ALGORITHM_REPO_PATH, "data", "processed", "PV", "public", "hard")
+    if os.path.exists(processed_hard_dir):
+        try:
+            for f in sorted(os.listdir(processed_hard_dir)):
+                if f.endswith(".json") and "public_hard_" in f:
+                    # 提取算例 ID
+                    parts = f.split("_")
+                    if len(parts) >= 3:
+                        instance_id = parts[-1].replace('.json', '')
+                        ids.add(instance_id)
+        except Exception as e:
+            print(f"Error reading hard data directory: {e}")
+    
     # 从扩展数据目录读取
     if os.path.exists(EXTENDED_DATA_DIR):
         try:
@@ -85,6 +141,20 @@ def list_available_raw_instances() -> list[str]:
             print(f"Error reading extended data directory: {e}")
     
     return sorted(list(ids))
+
+
+def load_existing_result(instance_id: str, module: int) -> Optional[dict]:
+    """加载已有结果"""
+    if not ALGORITHM_REPO_EXISTS:
+        return None
+    result_path = os.path.join(RESULTS_DIR, f"module{module}", f"M{module}-Output_{instance_id}.json")
+    if not os.path.exists(result_path):
+        return None
+    try:
+        with open(result_path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return None
 
 
 def list_available_results() -> dict[str, list[int]]:
@@ -103,7 +173,7 @@ def list_available_results() -> dict[str, list[int]]:
     return result
 
 
-def run_algorithm_pipeline(instance_id: str, raw_file_path: str, job_update_callback):
+def run_algorithm_pipeline(instance_id: str, raw_file_path: str, job_update_callback, verbose: bool = False):
     """
     运行完整算法流水线。在后台线程中执行。
     job_update_callback(status, progress, error=None) 用于更新任务状态。
@@ -125,8 +195,11 @@ def run_algorithm_pipeline(instance_id: str, raw_file_path: str, job_update_call
                 import subprocess
                 
                 # 运行 main.py 脚本
+                cmd = [sys.executable, main_script, "--instance_id", instance_id]
+                if verbose:
+                    cmd.append("--verbose")
                 process = subprocess.Popen(
-                    [sys.executable, main_script, "--instance_id", instance_id, "--verbose", "true"],
+                    cmd,
                     cwd=ALGORITHM_REPO_PATH,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
@@ -144,17 +217,10 @@ def run_algorithm_pipeline(instance_id: str, raw_file_path: str, job_update_call
                     "指标计算与结果可视化": 95
                 }
                 
-                current_progress = 10
-                
-                while True:
+                while process.poll() is None:
                     line = process.stdout.readline()
-                    if not line and process.poll() is not None:
-                        break
                     if line:
-                        output.append(line)
-                        print(line.strip())
-                        
-                        # 更新进度
+                        output.append(line.strip())
                         for step, progress in progress_map.items():
                             if step in line:
                                 current_progress = progress

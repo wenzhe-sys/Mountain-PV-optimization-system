@@ -15,8 +15,9 @@ from services.algorithm_runner import (
     load_processed_instance,
     load_existing_result,
     RAW_DATA_DIR,
+    EXTENDED_DATA_DIR,
 )
-from config import UPLOAD_DIR
+from config import UPLOAD_DIR, ALGORITHM_REPO_PATH
 
 router = APIRouter(prefix="/api/instances", tags=["instances"])
 
@@ -29,7 +30,16 @@ def list_instances(db: Session = Depends(get_db)):
     for inst in instances:
         d = InstanceResponse.model_validate(inst).model_dump()
         d["available_modules"] = sorted(available_results.get(inst.instance_id, []))
+        d["has_results"] = len(d["available_modules"]) > 0
+        
+        # 如果有可用结果，状态改为 completed
+        if d["has_results"]:
+            d["status"] = "completed"
+        
         items.append(d)
+    
+    items.sort(key=lambda x: (-x["has_results"], x["instance_id"]))
+    
     return {"status": "success", "data": items}
 
 
@@ -38,12 +48,17 @@ def list_preloaded():
     """列出算法仓库中可导入的原始算例"""
     ids = list_available_raw_instances()
     available = list_available_results()
+    
+    items = [
+        {"instance_id": iid, "has_results": sorted(available.get(iid, []))}
+        for iid in ids
+    ]
+    
+    items.sort(key=lambda x: (-len(x["has_results"]), x["instance_id"]))
+    
     return {
         "status": "success",
-        "data": [
-            {"instance_id": iid, "has_results": sorted(available.get(iid, []))}
-            for iid in ids
-        ],
+        "data": items,
     }
 
 
@@ -64,44 +79,57 @@ def import_preloaded(
     if existing:
         raise HTTPException(400, f"算例 {instance_id} 已存在")
 
-    # 尝试从原始数据目录读取 .txt 文件
-    raw_path = os.path.join(RAW_DATA_DIR, f"{instance_id}.txt")
-    n_nodes = 0
+    # 尝试从各个目录查找算例文件
+    found = False
+    search_dirs = [
+        RAW_DATA_DIR,  # 原始数据目录
+        os.path.join(ALGORITHM_REPO_PATH, "data", "processed", "PV", "public", "easy"),
+        os.path.join(ALGORITHM_REPO_PATH, "data", "processed", "PV", "public", "medium"),
+        os.path.join(ALGORITHM_REPO_PATH, "data", "processed", "PV", "public", "hard"),
+        EXTENDED_DATA_DIR,  # 扩展数据目录
+    ]
     
-    if os.path.exists(raw_path):
-        # 从 .txt 文件计算节点数
-        with open(raw_path, "r") as f:
-            for line in f:
-                if line.strip():
-                    n_nodes += 1
-    else:
-        # 尝试从扩展数据目录读取 .json 文件
-        from services.algorithm_runner import EXTENDED_DATA_DIR
-        
-        found = False
-        for f in os.listdir(EXTENDED_DATA_DIR):
-            # 匹配格式：public_xxx_r{instance_id}.json
-            if f.endswith(f"_r{instance_id}.json"):
-                json_path = os.path.join(EXTENDED_DATA_DIR, f)
-                try:
-                    with open(json_path, "r", encoding="utf-8") as jf:
-                        data = json.load(jf)
-                        # 从 JSON 数据中获取节点数
-                        if "nodes" in data:
-                            n_nodes = len(data["nodes"])
-                        elif "installations" in data:
-                            n_nodes = len(data["installations"])
-                        else:
-                            # 如果没有明确的节点信息，设置默认值
-                            n_nodes = 100
+    for search_dir in search_dirs:
+        if os.path.exists(search_dir):
+            for f in os.listdir(search_dir):
+                # 匹配格式：包含 _r{instance_id}.json 的文件
+                # 例如：public_easy_r1.json -> 包含 "_r1.json"
+                instance_num = instance_id.lstrip('r')  # 'r1' -> '1'
+                if (("_r" + instance_id + ".json" in f) or 
+                    ("_r" + instance_num + ".json" in f) or 
+                    ("r" + instance_id + ".json" in f) or
+                    ("r" + instance_num + ".json" in f) or
+                    f == instance_id + ".txt"):
+                    file_path = os.path.join(search_dir, f)
+                    try:
+                        if f.endswith(".json"):
+                            with open(file_path, "r", encoding="utf-8") as jf:
+                                data = json.load(jf)
+                                # 从 JSON 数据中获取节点数
+                                if "nodes" in data:
+                                    n_nodes = len(data["nodes"])
+                                elif "installations" in data:
+                                    n_nodes = len(data["installations"])
+                                elif "pva_list" in data:
+                                    n_nodes = len(data.get("pva_list", []))
+                                else:
+                                    n_nodes = 100
+                        else:  # .txt 文件
+                            with open(file_path, "r") as tf:
+                                n_nodes = sum(1 for line in tf if line.strip())
+                        
                         found = True
-                        raw_path = json_path  # 更新文件路径
+                        raw_path = file_path
+                        print(f"Found instance {instance_id} at {file_path}")
                         break
-                except Exception as e:
-                    print(f"Error reading JSON file {f}: {e}")
+                    except Exception as e:
+                        print(f"Error reading file {f}: {e}")
         
-        if not found:
-            raise HTTPException(404, f"数据文件不存在: {instance_id}.txt 或 {instance_id}.json")
+        if found:
+            break
+    
+    if not found:
+        raise HTTPException(404, f"数据文件不存在: {instance_id}.txt 或 {instance_id}.json")
 
     # 检查是否有已有结果
     has_results = any(

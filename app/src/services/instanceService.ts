@@ -71,7 +71,23 @@ const instanceService = {
     console.log('获取算例详情响应:', res);
     // 后端返回格式: {status: "success", data: {...}}
     if (res && res.status === 'success' && res.data) {
-      return res.data;
+      // 将 processed_data 的内容展开到顶层，方便前端使用
+      const data = res.data;
+      if (data.processed_data) {
+        return {
+          ...data,
+          // 顶层已有字段保留，同时从 processed_data 展开常用字段
+          instance_info: data.processed_data.instance_info,
+          terrain_data: data.processed_data.terrain_data,
+          pva_list: data.processed_data.pva_list,
+          pva_params: data.processed_data.pva_params,
+          equipment_params: data.processed_data.equipment_params,
+          loss_params: data.processed_data.loss_params,
+          dist_matrix: data.processed_data.dist_matrix,
+          constraint_info: data.processed_data.constraint_info,
+        };
+      }
+      return data;
     } else {
       console.error('后端API响应格式错误:', res);
       throw new Error('后端API响应格式错误');

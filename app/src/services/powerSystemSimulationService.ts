@@ -4,7 +4,7 @@ import { apiClient } from './apiClient';
 
 const fetchPowerAnalysis = async (instanceId: string = 'r1'): Promise<any> => {
   try {
-    const response = await apiClient.post(`/api/power-analysis?instance_id=${instanceId}`);
+    const response = await apiClient.postAlgorithm(`/power-analysis?instance_id=${instanceId}`);
     if (response && response.status === 'success' && response.data) {
       return response.data;
     }
@@ -17,7 +17,7 @@ const fetchPowerAnalysis = async (instanceId: string = 'r1'): Promise<any> => {
 
 const fetchFaultAnalysis = async (instanceId: string = 'r1'): Promise<any> => {
   try {
-    const response = await apiClient.post(`/api/fault-analysis?instance_id=${instanceId}`);
+    const response = await apiClient.postAlgorithm(`/fault-analysis?instance_id=${instanceId}`);
     if (response && response.status === 'success' && response.data) {
       return response.data;
     }

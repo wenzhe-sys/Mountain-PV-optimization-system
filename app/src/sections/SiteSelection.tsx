@@ -431,11 +431,11 @@ const SiteSelection: React.FC = () => {
       controlsRef.current = controls;
 
       // 添加环境光
-      const ambientLight = new THREE.AmbientLight(0x404080, 0.4);
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
       scene.add(ambientLight);
 
       // 添加太阳光（方向光）
-      const sunLight = new THREE.DirectionalLight(0xfff4e6, 1.5);
+      const sunLight = new THREE.DirectionalLight(0xfff4e6, 2.0);
       sunLight.position.set(50, 80, 30);
       sunLight.castShadow = true;
       sunLight.shadow.mapSize.width = 4096;
@@ -451,7 +451,7 @@ const SiteSelection: React.FC = () => {
       sunLightRef.current = sunLight;
 
       // 添加半球光
-      const hemiLight = new THREE.HemisphereLight(0x87ceeb, 0x2d5016, 0.6);
+      const hemiLight = new THREE.HemisphereLight(0x87ceeb, 0x2d5016, 1.0);
       scene.add(hemiLight);
 
       // 创建地形

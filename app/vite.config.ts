@@ -15,7 +15,7 @@ export default defineConfig({
         changeOrigin: true,
       },
       '/api': {
-        target: 'http://localhost:8003',
+        target: 'http://localhost:8004',
         changeOrigin: true,
       },
       '/ws': {

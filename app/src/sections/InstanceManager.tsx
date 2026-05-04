@@ -150,7 +150,7 @@ export default function InstanceManager() {
   const [selectedInstances, setSelectedInstances] = useState<Set<string>>(new Set());
   const [showBatchActions, setShowBatchActions] = useState<boolean>(false);
   const [sortBy, setSortBy] = useState<string>('created_at');
-  const [sortOrder, setSortOrder] = useState<string>('desc');
+  const [sortOrder, setSortOrder] = useState<string>('asc');
   const [importProgress, setImportProgress] = useState<number>(0);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [filterDifficulty, setFilterDifficulty] = useState<string>('all');
@@ -627,6 +627,13 @@ export default function InstanceManager() {
 
   const sortInstances = (insts: InstanceInfo[]) => {
     return [...insts].sort((a, b) => {
+      // 第一优先：有结果的排前面
+      const aHasResults = (a.available_modules?.length || 0) > 0;
+      const bHasResults = (b.available_modules?.length || 0) > 0;
+      if (aHasResults && !bHasResults) return -1;
+      if (!aHasResults && bHasResults) return 1;
+      
+      // 第二优先：用户选择的排序方式
       let aVal: any, bVal: any;
       switch (sortBy) {
         case 'name':
@@ -1255,7 +1262,7 @@ export default function InstanceManager() {
                           当前选中
                         </span>
                       )}
-                      {inst.status === 'uploaded' && (
+                      {inst.status === 'uploaded' && (inst.available_modules?.length || 0) === 0 && (
                         <motion.button
                           onClick={(e) => {
                             e.stopPropagation();

@@ -11,7 +11,7 @@ export interface JobStatus {
 
 const resultService = {
   getModule1: async (instanceId: string) => {
-    const res = await apiClient.get(`/api/results/${instanceId}`);
+    const res = await apiClient.get(`/results/${instanceId}`);
     console.log('获取模块1结果响应:', res);
     if (res && res.status === 'success' && res.data && res.data.module1) {
       return res.data.module1;
@@ -22,7 +22,7 @@ const resultService = {
   },
 
   getModule2: async (instanceId: string) => {
-    const res = await apiClient.get(`/api/results/${instanceId}`);
+    const res = await apiClient.get(`/results/${instanceId}`);
     console.log('获取模块2结果响应:', res);
     if (res && res.status === 'success' && res.data && res.data.module2) {
       return res.data.module2;
@@ -33,7 +33,7 @@ const resultService = {
   },
 
   getModule3: async (instanceId: string) => {
-    const res = await apiClient.get(`/api/results/${instanceId}`);
+    const res = await apiClient.get(`/results/${instanceId}`);
     console.log('获取模块3结果响应:', res);
     if (res && res.status === 'success' && res.data && res.data.module3) {
       return res.data.module3;
@@ -44,7 +44,7 @@ const resultService = {
   },
 
   getSummary: async (instanceId: string) => {
-    const res = await apiClient.get(`/api/results/${instanceId}`);
+    const res = await apiClient.get(`/results/${instanceId}`);
     console.log('获取结果摘要响应:', res);
     if (res && res.status === 'success' && res.data) {
       return res.data;
@@ -55,7 +55,7 @@ const resultService = {
   },
 
   getAll: async (instanceId: string) => {
-    const res = await apiClient.get(`/api/results/${instanceId}`);
+    const res = await apiClient.get(`/results/${instanceId}`);
     console.log('获取所有结果响应:', res);
     if (res && res.status === 'success' && res.data) {
       return res.data;
@@ -66,7 +66,13 @@ const resultService = {
   },
 
   startComputation: async (instanceId: string, maxIter: number = 10): Promise<JobStatus> => {
-    const res = await apiClient.post('/optimize', { instance_id: instanceId, use_dqn: true, max_iter: maxIter, verbose: false });
+    // 使用算法API调用优化
+    const res = await apiClient.postAlgorithm('/optimize', { 
+      instance_id: instanceId, 
+      use_dqn: true, 
+      max_iter: maxIter, 
+      verbose: false 
+    });
     console.log('开始计算响应:', res);
     if (res && res.status === 'success' && res.data) {
       return {

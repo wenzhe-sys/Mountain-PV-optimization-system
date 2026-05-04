@@ -102,7 +102,7 @@ const OptimizationDemo = () => {
     }).filter(Boolean);
   };
   const [useDqn, setUseDqn] = useState<boolean>(true);
-  const [maxIter, setMaxIter] = useState<number[]>([10]);
+  const [maxIter, setMaxIter] = useState<number[]>([1]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [optimizationResult, setOptimizationResult] = useState<any>(null);
   const [apiStatus, setApiStatus] = useState<string>('检查中...');
@@ -134,40 +134,48 @@ const OptimizationDemo = () => {
   // 建立WebSocket连接
   useEffect(() => {
     const connectWebSocket = () => {
-      const ws = new WebSocket(`/ws/${clientId}`);
-      
-      ws.onopen = () => {
-        console.log('WebSocket连接已建立');
-      };
-      
-      ws.onmessage = (event) => {
-        try {
-          const message = JSON.parse(event.data);
-          if (message.type === 'progress') {
-            setProgress(message.progress);
-            setCurrentStage(message.stage);
-            setStageProgress(message.stage_progress);
+      try {
+        const ws = new WebSocket(`ws://localhost:8003/ws/${clientId}`);
+
+        ws.onopen = () => {
+          console.log('WebSocket连接已建立');
+        };
+
+        ws.onmessage = (event) => {
+          try {
+            const message = JSON.parse(event.data);
+            if (message.type === 'progress') {
+              setProgress(message.progress);
+              setCurrentStage(message.stage);
+              setStageProgress(message.stage_progress);
+            }
+          } catch (error) {
+            console.error('WebSocket消息解析失败:', error);
           }
-        } catch (error) {
-          console.error('WebSocket消息解析失败:', error);
-        }
-      };
-      
-      ws.onclose = () => {
-        console.log('WebSocket连接已关闭');
-      };
-      
-      ws.onerror = (error) => {
-        console.error('WebSocket错误:', error);
-      };
-      
-      setWebsocket(ws);
-      
-      return () => {
-        ws.close();
-      };
+        };
+
+        ws.onclose = () => {
+          console.log('WebSocket连接已关闭');
+        };
+
+        ws.onerror = (error) => {
+          console.warn('WebSocket连接失败，将使用轮询模式');
+          setWebsocket(null);
+        };
+
+        setWebsocket(ws);
+
+        return () => {
+          if (ws.readyState === WebSocket.OPEN) {
+            ws.close();
+          }
+        };
+      } catch (error) {
+        console.warn('WebSocket初始化失败，将使用轮询模式');
+        setWebsocket(null);
+      }
     };
-    
+
     connectWebSocket();
   }, [clientId]);
 
@@ -544,12 +552,29 @@ const OptimizationDemo = () => {
 
   const performanceRadarData = () => {
     try {
-      // 获取成本数据
       const totalCost = optimizationResult?.metrics?.total_cost || optimizationResult?.module3_output?.total_cost_summary?.total_cost || 150;
+      const lcoe = optimizationResult?.metrics?.lcoe || 0;
+      const coverageRate = optimizationResult?.metrics?.coverage_rate || 95;
+      const trenchOptRate = optimizationResult?.metrics?.trench_optimization_rate || 66;
       
-      // 改进成本效益计算方式，使其更加合理
-      // 假设成本在 100-200 万之间，映射到 80-100 分
-      const costScore = Math.max(0, Math.min(100, 100 - (totalCost - 100) * 0.2));
+      // 成本效益：基于 LCOE 和覆盖面积利用率综合计算
+      // LCOE 越低越好，覆盖面积利用率越高越好
+      // LCOE 正常范围 0.3-0.5 元/kWh，映射到 70-95 分
+      // 覆盖面积利用率正常范围 90-100%，映射到 90-100 分
+      let costScore = 70;
+      if (lcoe > 0 && lcoe < 10) {
+        const lcoeScore = Math.max(0, Math.min(100, 100 - (lcoe - 0.3) * 50));
+        const coverageScore = coverageRate;
+        costScore = Math.round(lcoeScore * 0.6 + coverageScore * 0.4);
+      } else if (totalCost > 0 && totalCost < 10000) {
+        // 如果 LCOE 无效，使用总成本计算
+        // 成本越低越好，假设合理范围 50-200 万
+        const normalizedCost = Math.max(0, Math.min(100, 100 - (totalCost - 50) * 0.5));
+        costScore = Math.round(normalizedCost * 0.6 + coverageRate * 0.4);
+      } else {
+        // 默认值
+        costScore = 75;
+      }
       
       // 系统效率：通常在 0.9-1.0 之间，映射到 85-95 分
       const efficiency = optimizationResult?.metrics?.efficiency || 0.92;
@@ -572,12 +597,12 @@ const OptimizationDemo = () => {
         },
         {
           subject: '覆盖面积利用率',
-          A: optimizationResult?.metrics?.coverage_rate || 95,
+          A: coverageRate,
           fullMark: 100
         },
         {
           subject: '共沟成本优化率',
-          A: optimizationResult?.metrics?.trench_optimization_rate || 66,
+          A: trenchOptRate,
           fullMark: 100
         },
         {
@@ -593,14 +618,13 @@ const OptimizationDemo = () => {
       ];
     } catch (error) {
       console.error('处理性能雷达数据时出错:', error);
-      // 返回默认数据，确保图表能够正常显示
       return [
         { subject: '系统效率', A: 90, fullMark: 100 },
         { subject: '系统可靠性', A: 85, fullMark: 100 },
         { subject: '覆盖面积利用率', A: 95, fullMark: 100 },
         { subject: '共沟成本优化率', A: 66, fullMark: 100 },
         { subject: '约束满足度', A: 95, fullMark: 100 },
-        { subject: '成本效益', A: 90, fullMark: 100 }
+        { subject: '成本效益', A: 85, fullMark: 100 }
       ];
     }
   };

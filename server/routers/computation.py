@@ -1,7 +1,8 @@
 import json
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Body, Depends, HTTPException
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from database import get_db
@@ -12,7 +13,12 @@ from services.algorithm_runner import executor, run_algorithm_pipeline, load_exi
 
 router = APIRouter(prefix="/api/compute", tags=["computation"])
 
-# 内存中跟踪运行中的任务
+
+class ComputeRequest(BaseModel):
+    use_dqn: bool = True
+    max_iter: int = 10
+    verbose: bool = False
+    fast_mode: bool = True
 _running_jobs: dict[int, dict] = {}
 
 
@@ -44,10 +50,10 @@ def _make_update_callback(job_id: int, db_url: str):
     return callback
 
 
-def _run_and_save(job_id: int, instance_id_str: str, raw_file_path: str, db_url: str):
+def _run_and_save(job_id: int, instance_id_str: str, raw_file_path: str, db_url: str, verbose: bool = False):
     """在后台线程中运行算法并保存结果"""
     callback = _make_update_callback(job_id, db_url)
-    results = run_algorithm_pipeline(instance_id_str, raw_file_path, callback)
+    results = run_algorithm_pipeline(instance_id_str, raw_file_path, callback, verbose)
 
     if results:
         from sqlalchemy import create_engine
@@ -69,6 +75,7 @@ def _run_and_save(job_id: int, instance_id_str: str, raw_file_path: str, db_url:
 @router.post("/{instance_id}")
 def start_computation(
     instance_id: str,
+    request: ComputeRequest,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -101,7 +108,7 @@ def start_computation(
     db.refresh(job)
 
     from config import DATABASE_URL
-    executor.submit(_run_and_save, job.id, inst.instance_id, inst.file_path, DATABASE_URL)
+    executor.submit(_run_and_save, job.id, inst.instance_id, inst.file_path, DATABASE_URL, request.verbose)
 
     return {
         "status": "success",

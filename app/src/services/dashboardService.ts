@@ -1,9 +1,9 @@
-import { apiClient } from './apiClient';
+import apiClient from './apiClient';
 
 // 获取后端仪表盘指标数据
 const fetchDashboardMetrics = async (instanceId: string = 'r1'): Promise<any> => {
   try {
-    const response = await apiClient.post(`/dashboard-metrics?instance_id=${instanceId}`);
+    const response = await apiClient.postAlgorithm(`/dashboard-metrics`, { instance_id: instanceId });
     if (response && response.status === 'success' && response.data) {
       return response.data;
     }

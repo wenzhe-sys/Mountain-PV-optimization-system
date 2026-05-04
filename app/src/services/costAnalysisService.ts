@@ -3,7 +3,7 @@ import { apiClient } from './apiClient';
 // 获取后端成本分析数据
 const fetchCostAnalysis = async (instanceId: string = 'r1'): Promise<any> => {
   try {
-    const response = await apiClient.post(`/api/cost-analysis?instance_id=${instanceId}`);
+    const response = await apiClient.postAlgorithm(`/cost-analysis?instance_id=${instanceId}`);
     if (response && response.status === 'success' && response.data) {
       return response.data;
     }

@@ -3,7 +3,7 @@ import { apiClient } from './apiClient';
 // 获取后端真实优化结果
 const fetchOptimizationResult = async (instanceId: string = 'r1'): Promise<any> => {
   try {
-    const response = await apiClient.post(`/api/optimize?instance_id=${instanceId}`);
+    const response = await apiClient.postAlgorithm(`/panel-layout?instance_id=${instanceId}`);
     if (response && response.status === 'success' && response.data) {
       return response.data;
     }

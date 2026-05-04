@@ -45,10 +45,10 @@ export const optimizationService = {
    * 运行光伏电站设计优化
    */
   runOptimization: async (params: OptimizationRequest): Promise<OptimizationResult> => {
-    console.log('发送优化请求:', '/api/optimize', params);
+    console.log('发送优化请求:', '/algorithm/optimize', params);
     
     try {
-      const response = await apiClient.post('/optimize', params);
+      const response = await apiClient.postAlgorithm('/optimize', params);
       console.log('后端API响应:', response);
       console.log('响应类型:', typeof response);
       console.log('响应keys:', response ? Object.keys(response) : 'response为空');
@@ -74,7 +74,7 @@ export const optimizationService = {
         for (let i = 0; i < maxAttempts; i++) {
           await new Promise(resolve => setTimeout(resolve, intervalMs));
           try {
-            const taskStatus = await apiClient.get(`/api/task/${response.task_id}`);
+            const taskStatus = await apiClient.getAlgorithm(`/task/${response.task_id}`);
             console.log(`轮询 ${i + 1}/${maxAttempts}:`, taskStatus);
             // 检查 task_status 或 status 字段
             const taskStatusValue = taskStatus.task_status || taskStatus.status;
@@ -112,7 +112,7 @@ export const optimizationService = {
    * 获取可用的算例列表
    */
   getInstances: async (): Promise<string[]> => {
-    const response = await apiClient.get('/instances');
+    const response = await apiClient.getAlgorithm('/instances');
     console.log('获取算例列表响应:', response);
     // 检查后端返回格式
     if (Array.isArray(response)) {
@@ -139,7 +139,7 @@ export const optimizationService = {
    * 获取指定算例的优化结果
    */
   getResults: async (instance_id: string): Promise<ResultsResponse['data']> => {
-    const response = await apiClient.get(`/api/results/${instance_id}`);
+    const response = await apiClient.getAlgorithm(`/results/${instance_id}`);
     console.log('获取优化结果响应:', response);
     // 后端返回格式: {status: "success", data: {...}}
     if (response && response.status === 'success' && response.data) {
@@ -154,7 +154,7 @@ export const optimizationService = {
    * 健康检查
    */
   healthCheck: async (): Promise<{ status: string; message: string }> => {
-    const response = await apiClient.get('/health');
+    const response = await apiClient.getAlgorithm('/health');
     console.log('健康检查响应:', response);
     if (response) {
       return response;
